@@ -14,5 +14,5 @@ fun Application.module() {
     configureRouting()
     configureSession()
     configureWebSocket()
-    configureDatabase()
+//    configureDatabase()
 }

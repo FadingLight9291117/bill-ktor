@@ -1,7 +1,7 @@
 package cn.fadinglight.plugins
 
-import cn.fadinglight.Bills
-import cn.fadinglight.Labels
+import cn.fadinglight.mapers.Bills
+import cn.fadinglight.mapers.Labels
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
