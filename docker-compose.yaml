@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: bill-test-db
     image: mariadb
     restart: always
     environment:
@@ -10,6 +11,7 @@ services:
       - db-data:/var/lib/mysql
 
   adminer:
+    container_name: bill-test-adminer
     image: adminer
     restart: always
     ports:

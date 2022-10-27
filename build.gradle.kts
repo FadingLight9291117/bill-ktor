@@ -50,6 +50,7 @@ dependencies {
 
     // Session
     implementation("io.ktor:ktor-server-sessions:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
     // Ktor
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
