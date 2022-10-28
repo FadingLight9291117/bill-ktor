@@ -11,5 +11,5 @@ data class Label(
     val type: LabelType,
     val name: String,
     var count: Int,
-    val relativedId: Int,
+    val relativedId: Int?,
 )
