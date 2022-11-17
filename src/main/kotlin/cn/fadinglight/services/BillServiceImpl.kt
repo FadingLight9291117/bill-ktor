@@ -1,6 +1,7 @@
 package cn.fadinglight.services
 
 import cn.fadinglight.mapers.Bills
+import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Bill
 import cn.fadinglight.models.BillType
 import org.jetbrains.exposed.sql.*
@@ -21,43 +22,61 @@ class BillServiceImpl : BillService {
     )
 
     override suspend fun getManyBills(year: String, month: String): List<Bill> = transaction {
-        Bills.select(Bills.date like "%${year}-${month}%").map(::resultRowToBill)
+        Bills
+            .select(Bills.date like "%${year}-${month}%")
+            .map(::resultRowToBill)
     }
 
 
     override suspend fun getManyBills(year: String, month: String, day: String): List<Bill> = transaction {
-        Bills.select(Bills.date eq "${year}-${month}-${day}").map(::resultRowToBill)
+        Bills
+            .select(Bills.date eq "${year}-${month}-${day}")
+            .map(::resultRowToBill)
     }
 
     override suspend fun getManyBills(): List<Bill> = transaction {
-        Bills.selectAll().map(::resultRowToBill)
+        Bills
+            .selectAll()
+            .map(::resultRowToBill)
     }
 
-    override suspend fun getOneBill(billId: Int): Bill = transaction {
-        Bills.select(Bills.id eq billId).single().let(::resultRowToBill)
+    override suspend fun getOneBill(billId: Int): Bill? = transaction {
+        Bills
+            .select(Bills.id eq billId)
+            .map(::resultRowToBill)
+            .singleOrNull()
     }
-
 
     override suspend fun addOneBill(bill: Bill): Int = transaction {
-        Bills.insertAndGetId {
-            it[type] = bill.type.name
-            it[date] = bill.date
-            it[cls] = bill.cls
-            it[label] = bill.label
-            it[money] = bill.money
-            it[options] = bill.options
-        }.value
+        Bills
+            .insertAndGetId {
+                it[type] = bill.type.name
+                it[date] = bill.date
+                it[cls] = bill.cls
+                it[label] = bill.label
+                it[money] = bill.money
+                it[options] = bill.options
+            }
+
+        Labels
+            .update({ Labels.name inList listOf(bill.cls, bill.label) }) {
+                with(SqlExpressionBuilder) {
+                    it[count] = count + 1
+                }
+            }
     }
 
     override suspend fun addManyBills(bills: List<Bill>): Int = transaction {
-        Bills.batchInsert(bills) {
-            this[Bills.type] = it.type.name
-            this[Bills.date] = it.date
-            this[Bills.cls] = it.cls
-            this[Bills.label] = it.label
-            this[Bills.money] = it.money
-            this[Bills.options] = it.options
-        }.count()
+        Bills
+            .batchInsert(bills) {
+                this[Bills.type] = it.type.name
+                this[Bills.date] = it.date
+                this[Bills.cls] = it.cls
+                this[Bills.label] = it.label
+                this[Bills.money] = it.money
+                this[Bills.options] = it.options
+            }
+            .count()
     }
 
     override suspend fun updateManyBills(bills: List<Bill>): Int {
@@ -65,14 +84,15 @@ class BillServiceImpl : BillService {
     }
 
     override suspend fun updateOneBill(bill: Bill) = transaction {
-        Bills.update({ Bills.id eq bill.id }) {
-            it[type] = bill.type.name
-            it[date] = bill.date
-            it[money] = bill.money
-            it[cls] = bill.cls
-            it[label] = bill.label
-            it[options] = bill.options
-        }
+        Bills
+            .update({ Bills.id eq bill.id }) {
+                it[type] = bill.type.name
+                it[date] = bill.date
+                it[money] = bill.money
+                it[cls] = bill.cls
+                it[label] = bill.label
+                it[options] = bill.options
+            }
     }
 
     override suspend fun deleteManyBills(bills: List<Bill>): Int {
@@ -80,8 +100,7 @@ class BillServiceImpl : BillService {
     }
 
     override suspend fun deleteOneBill(billId: Int): Int = transaction {
-        Bills.deleteWhere { Bills.id eq billId }
+        Bills
+            .deleteWhere { Bills.id eq billId }
     }
-
-
 }

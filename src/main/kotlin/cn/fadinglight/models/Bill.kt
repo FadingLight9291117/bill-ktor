@@ -12,8 +12,8 @@ data class Bill(
     var id: Int?,
     val type: BillType,
     val date: String,
-    val money: Int,
+    val money: Float,
     val cls: String,
     val label: String,
-    val options: String?,
+    val options: String = "",
 )

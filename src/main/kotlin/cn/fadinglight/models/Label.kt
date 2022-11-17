@@ -4,6 +4,7 @@ package cn.fadinglight.models
 enum class LabelType {
     CLASS,
     LABEL,
+    INCOME_CLASS,
 }
 
 data class Label(

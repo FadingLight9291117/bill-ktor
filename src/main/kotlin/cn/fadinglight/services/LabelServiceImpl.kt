@@ -1,10 +1,11 @@
 package cn.fadinglight.services
 
-import cn.fadinglight.dao.LabelDao
-import cn.fadinglight.dao.dao
+import cn.fadinglight.vo.LabelVO
+import cn.fadinglight.vo.vo
 import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Label
 import cn.fadinglight.models.LabelType
+import cn.fadinglight.vo.LabelGroup
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -17,18 +18,32 @@ class LabelServiceImpl : LabelService {
         relativedId = row[Labels.relativeId]
     )
 
-    override suspend fun getLabels(): List<LabelDao> {
+    override suspend fun getLabels(): LabelGroup {
         val labelGroups = transaction {
-            Labels.selectAll().map(::resultRowToLabel).groupBy { it.type }
+            Labels
+                .selectAll()
+                .map(::resultRowToLabel)
+                .groupBy { it.type }
         }
-        return labelGroups[LabelType.CLASS]?.map {
-            it.dao().apply {
-                labels = labelGroups[LabelType.LABEL]
-                    ?.filter { it2 -> it2.relativedId == it.id }
-                    ?.map(Label::dao)
-                    ?: emptyList()
-            }
-        } ?: emptyList()
+        val consumeLabels =  labelGroups[LabelType.CLASS]
+            ?.map {
+                it.vo().apply {
+                    this.labels = labelGroups[LabelType.LABEL]
+                        ?.filter { it2 -> it2.relativedId == it.id }
+                        ?.map(Label::vo)
+                        ?: emptyList()
+                }
+            } ?: emptyList()
+        val incomeLabels = labelGroups[LabelType.CLASS]
+            ?.map {
+                it.vo().apply {
+                    this.labels = labelGroups[LabelType.INCOME_CLASS]
+                        ?.filter { it2 -> it2.relativedId == it.id }
+                        ?.map(Label::vo)
+                        ?: emptyList()
+                }
+            } ?: emptyList()
+        return LabelGroup(income = incomeLabels, consume = consumeLabels)
     }
 
     override suspend fun addLabel(labelType: LabelType, label: Label): Int = transaction {
@@ -51,5 +66,4 @@ class LabelServiceImpl : LabelService {
             }
         }
     }
-
 }

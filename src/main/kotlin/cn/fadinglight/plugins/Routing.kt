@@ -10,7 +10,7 @@ fun Application.configureRouting() {
     routing {
         route("/") {
             get {
-                call.respondText("Hello World!")
+                call.respondText("Welcome che's Bill App!")
             }
         }
         route("/api/v1") {

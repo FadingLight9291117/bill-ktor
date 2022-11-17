@@ -12,7 +12,6 @@ plugins {
 }
 
 
-
 group = "cn.fadinglight"
 version = "0.0.1"
 application {
@@ -21,7 +20,6 @@ application {
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
-
 
 tasks.withType<Jar> {
     manifest {
