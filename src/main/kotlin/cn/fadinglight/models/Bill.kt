@@ -4,9 +4,18 @@ import kotlinx.serialization.Serializable
 
 
 enum class BillType {
-    Consume,
-    Income,
+    CONSUME,
+    INCOME;
+
+    companion object {
+        fun toType(n: Int): BillType = when (n) {
+            0 -> CONSUME
+            1 -> INCOME
+            else -> throw IllegalArgumentException("error type $n")
+        }
+    }
 }
+
 @Serializable
 data class Bill(
     var id: Int?,

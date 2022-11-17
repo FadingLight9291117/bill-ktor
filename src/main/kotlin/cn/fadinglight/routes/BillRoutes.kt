@@ -41,10 +41,15 @@ fun Route.billRoute() {
             }
         }
 
-        delete("{id}") {
-            val id = call.parameters.getOrFail("id").toInt()
-            val count = billService.deleteOneBill(id)
-            call.respond(status = HttpStatusCode.OK, Resp.Ok(count).json())
+        delete("{id?}") {
+            runCatching {
+                val id = call.parameters.getOrFail("id").toInt()
+                billService.deleteOneBill(id)
+            }.onSuccess {
+                call.respond(status = HttpStatusCode.OK, Resp.Ok(it).json())
+            }.onFailure {
+                call.respond(Resp.Error(it.message).json())
+            }
         }
 
         put("/") {

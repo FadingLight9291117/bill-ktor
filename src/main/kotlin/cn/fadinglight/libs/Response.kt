@@ -12,7 +12,7 @@ sealed class Resp<T> {
         override fun json() = RespData(code = 0, data = data, message = null)
     }
 
-    class Error(private val message: String?, val code: Int) : Resp<Unit>() {
+    class Error(private val message: String?, val code: Int=-1) : Resp<Unit>() {
         override fun json(): RespData<Unit> = RespData(code = code, data = null, message = message)
     }
 

@@ -3,6 +3,7 @@ package cn.fadinglight.vo
 import cn.fadinglight.models.Bill
 import cn.fadinglight.models.BillType
 import kotlinx.serialization.Serializable
+import java.util.*
 
 @Serializable
 data class BillVO(
@@ -17,7 +18,7 @@ data class BillVO(
 
 fun BillVO.bill() = Bill(
     id = id,
-    type = BillType.valueOf(type),
+    type = BillType.valueOf(type.uppercase(Locale.getDefault())),
     date = date,
     money = money,
     cls = cls,
