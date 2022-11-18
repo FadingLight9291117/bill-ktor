@@ -11,6 +11,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 
 class BillServiceImpl : BillService {
+    private fun formatSingletonNumber(n: String) = if (n.length == 1) {
+        "0$n"
+    } else {
+        n
+    }
+
     private fun resultRowToBill(row: ResultRow) = Bill(
         id = row[Bills.id].value,
         type = BillType.valueOf(row[Bills.type]),
@@ -23,14 +29,14 @@ class BillServiceImpl : BillService {
 
     override suspend fun getManyBills(year: String, month: String): List<Bill> = transaction {
         Bills
-            .select(Bills.date like "%${year}-${month}%")
+            .select(Bills.date like "%${year}-${formatSingletonNumber(month)}%")
             .map(::resultRowToBill)
     }
 
 
     override suspend fun getManyBills(year: String, month: String, day: String): List<Bill> = transaction {
         Bills
-            .select(Bills.date eq "${year}-${month}-${day}")
+            .select(Bills.date eq "${year}-${formatSingletonNumber(month)}-${formatSingletonNumber(day)}")
             .map(::resultRowToBill)
     }
 
