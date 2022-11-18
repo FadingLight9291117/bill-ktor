@@ -1,11 +1,11 @@
 package cn.fadinglight.services
 
-import cn.fadinglight.vo.LabelVO
 import cn.fadinglight.vo.vo
 import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Label
 import cn.fadinglight.models.LabelType
 import cn.fadinglight.vo.LabelGroup
+import cn.fadinglight.vo.LabelPost
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -15,7 +15,7 @@ class LabelServiceImpl : LabelService {
         type = LabelType.valueOf(row[Labels.type]),
         name = row[Labels.name],
         count = row[Labels.count],
-        relativedId = row[Labels.relativeId]
+        relativeId = row[Labels.relativeId]
     )
 
     override suspend fun getLabels(): LabelGroup {
@@ -25,11 +25,11 @@ class LabelServiceImpl : LabelService {
                 .map(::resultRowToLabel)
                 .groupBy { it.type }
         }
-        val consumeLabels =  labelGroups[LabelType.CLASS]
+        val consumeLabels = labelGroups[LabelType.CLASS]
             ?.map {
                 it.vo().apply {
                     this.labels = labelGroups[LabelType.LABEL]
-                        ?.filter { it2 -> it2.relativedId == it.id }
+                        ?.filter { it2 -> it2.relativeId == it.id }
                         ?.map(Label::vo)
                         ?: emptyList()
                 }
@@ -38,7 +38,7 @@ class LabelServiceImpl : LabelService {
             ?.map {
                 it.vo().apply {
                     this.labels = labelGroups[LabelType.INCOME_CLASS]
-                        ?.filter { it2 -> it2.relativedId == it.id }
+                        ?.filter { it2 -> it2.relativeId == it.id }
                         ?.map(Label::vo)
                         ?: emptyList()
                 }
@@ -46,13 +46,14 @@ class LabelServiceImpl : LabelService {
         return LabelGroup(income = incomeLabels, consume = consumeLabels)
     }
 
-    override suspend fun addLabel(labelType: LabelType, label: Label): Int = transaction {
-        Labels.insertAndGetId {
-            it[type] = label.type.name
-            it[name] = label.name
-            it[count] = label.count
-            it[relativeId] = label.relativedId
-        }.value
+    override suspend fun addLabel(label: Label): Int = transaction {
+        Labels
+            .insertAndGetId {
+                it[type] = label.type.name
+                it[name] = label.name
+                it[count] = 0
+                it[relativeId] = label.relativeId
+            }.value
     }
 
     override suspend fun deleteLabel(labelId: Int): Int {

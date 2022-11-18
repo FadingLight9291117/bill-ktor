@@ -8,7 +8,7 @@ import java.util.*
 @Serializable
 data class BillVO(
     val id: Int? = null,
-    val type: String,
+    val type: BillType,
     val date: String,
     val money: Float,
     val cls: String,
@@ -18,7 +18,7 @@ data class BillVO(
 
 fun BillVO.bill() = Bill(
     id = id,
-    type = BillType.valueOf(type.uppercase(Locale.getDefault())),
+    type = type,
     date = date,
     money = money,
     cls = cls,
@@ -28,7 +28,7 @@ fun BillVO.bill() = Bill(
 
 fun Bill.vo() = BillVO(
     id = id,
-    type = type.name,
+    type = type,
     date = date,
     money = money,
     cls = cls,

@@ -1,5 +1,6 @@
 package cn.fadinglight.plugins
 
+import cn.fadinglight.models.LabelType
 import cn.fadinglight.routes.billRoute
 import cn.fadinglight.routes.labelRoute
 import io.ktor.server.application.*
@@ -10,7 +11,7 @@ fun Application.configureRouting() {
     routing {
         route("/") {
             get {
-                call.respondText("Welcome che's Bill App!")
+                call.respond(LabelType.LABEL)
             }
         }
         route("/api/v1") {
