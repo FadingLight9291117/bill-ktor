@@ -8,10 +8,10 @@ enum class BillType {
     INCOME;
 
     companion object {
-        fun toType(n: Int): BillType = when (n) {
+        fun of(n: Int): BillType = when (n) {
             0 -> CONSUME
             1 -> INCOME
-            else -> throw IllegalArgumentException("error type $n")
+            else -> throw IllegalArgumentException("error code $n")
         }
     }
 }

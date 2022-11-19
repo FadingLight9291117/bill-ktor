@@ -4,13 +4,18 @@ import cn.fadinglight.mapers.Bills
 import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Bill
 import cn.fadinglight.models.BillType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
 class BillServiceImpl : BillService {
+    private val labelService = LabelServiceImpl()
     private fun formatSingletonNumber(n: String) = if (n.length == 1) {
         "0$n"
     } else {
@@ -73,7 +78,8 @@ class BillServiceImpl : BillService {
     }
 
     override suspend fun addManyBills(bills: List<Bill>): Int = transaction {
-        Bills
+
+        val newBills = Bills
             .batchInsert(bills) {
                 this[Bills.type] = it.type.name
                 this[Bills.date] = it.date
@@ -82,7 +88,23 @@ class BillServiceImpl : BillService {
                 this[Bills.money] = it.money
                 this[Bills.options] = it.options
             }
-            .count()
+            .map(::resultRowToBill)
+        newBills.forEach {
+            val classId = Labels
+                .select(Labels.name eq it.cls)
+                .map { it2 -> it2[Labels.id].value }
+                .single()
+            val labelId = Labels
+                .select(Labels.name eq it.label)
+                .map { it2 -> it2[Labels.id].value }
+                .single()
+            Labels.update({ (Labels.id eq labelId) or (Labels.id eq classId) }) {
+                with(SqlExpressionBuilder) {
+                    it[count] = count + 1
+                }
+            }
+        }
+        newBills.count()
     }
 
     override suspend fun updateManyBills(bills: List<Bill>): Int {

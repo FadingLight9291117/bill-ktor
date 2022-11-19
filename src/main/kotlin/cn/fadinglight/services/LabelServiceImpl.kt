@@ -5,7 +5,6 @@ import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Label
 import cn.fadinglight.models.LabelType
 import cn.fadinglight.vo.LabelGroup
-import cn.fadinglight.vo.LabelPost
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -34,15 +33,9 @@ class LabelServiceImpl : LabelService {
                         ?: emptyList()
                 }
             } ?: emptyList()
-        val incomeLabels = labelGroups[LabelType.CLASS]
-            ?.map {
-                it.vo().apply {
-                    this.labels = labelGroups[LabelType.INCOME_CLASS]
-                        ?.filter { it2 -> it2.relativeId == it.id }
-                        ?.map(Label::vo)
-                        ?: emptyList()
-                }
-            } ?: emptyList()
+        val incomeLabels = labelGroups[LabelType.INCOME_CLASS]
+            ?.map(Label::vo) ?: emptyList()
+
         return LabelGroup(income = incomeLabels, consume = consumeLabels)
     }
 
