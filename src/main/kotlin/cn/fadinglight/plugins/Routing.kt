@@ -11,7 +11,7 @@ fun Application.configureRouting() {
     routing {
         route("/") {
             get {
-                call.respond(LabelType.LABEL)
+                call.respond("Hello world")
             }
         }
         route("/api/v1") {

@@ -4,12 +4,15 @@ import cn.fadinglight.mapers.Bills
 import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Bill
 import cn.fadinglight.models.BillType
+import cn.fadinglight.models.LabelType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -78,7 +81,6 @@ class BillServiceImpl : BillService {
     }
 
     override suspend fun addManyBills(bills: List<Bill>): Int = transaction {
-
         val newBills = Bills
             .batchInsert(bills) {
                 this[Bills.type] = it.type.name
@@ -91,13 +93,19 @@ class BillServiceImpl : BillService {
             .map(::resultRowToBill)
         newBills.forEach {
             val classId = Labels
-                .select(Labels.name eq it.cls)
+                .select(
+                    (Labels.name eq it.cls) and (Labels.type inList listOf(
+                        LabelType.CONSUME_CLASS,
+                        LabelType.INCOME_CLASS
+                    ).map(LabelType::toString))
+                )
                 .map { it2 -> it2[Labels.id].value }
-                .single()
-            val labelId = Labels
-                .select(Labels.name eq it.label)
+                .singleOrNull()
+            val labelId = if (it.type == BillType.CONSUME) Labels
+                .select((Labels.name eq it.label) and (Labels.type eq LabelType.CONSUME_LABEL.toString()))
                 .map { it2 -> it2[Labels.id].value }
-                .single()
+                .singleOrNull()
+            else null
             Labels.update({ (Labels.id eq labelId) or (Labels.id eq classId) }) {
                 with(SqlExpressionBuilder) {
                     it[count] = count + 1

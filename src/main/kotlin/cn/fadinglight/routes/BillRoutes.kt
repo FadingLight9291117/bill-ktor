@@ -37,6 +37,7 @@ fun Route.billRoute() {
             }.onSuccess {
                 call.respond(Resp.Ok(it).json())
             }.onFailure {
+                it.printStackTrace()
                 call.respond(Resp.Error(it.message, code = -1).json())
             }
         }

@@ -23,8 +23,7 @@ fun LabelPost.label() = Label(
 @Serializable
 data class LabelVO(
     val name: String,
-    val count: Int,
-    var labels: List<LabelVO>?,
+    var labels: List<String>?,
 )
 
 @Serializable
@@ -36,6 +35,5 @@ data class LabelGroup(
 
 fun Label.vo() = LabelVO(
     name = name,
-    count = count,
-    labels = emptyList(),
+    labels = null,
 )

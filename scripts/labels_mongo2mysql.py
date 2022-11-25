@@ -5,43 +5,50 @@ mongo_url = 'http://www.fadinglight.cn:8088/class'
 mysql_url = 'http://localhost:8080/api/v1/label/'
 
 
-async def getMongoBills():
+async def getMongoLabels():
     async with aiohttp.ClientSession() as session:
         async with session.get(mongo_url) as response:
             data = await response.json()
     return data
 
 
-async def postBillsToMysql(bills):
+async def postLabelsToMysql(label):
     async with aiohttp.ClientSession() as session:
-        async with session.post(mysql_url, json=bills) as response:
+        async with session.post(mysql_url, json=label) as response:
             data = await response.json()
     return data
 
 
-def dealOneBill(bill):
-    bill.setdefault('type', 0)
+def newLabel(name, type=0, relativeId=None):
     return dict(
-        money=bill['money'],
-        cls=bill['cls'],
-        label=bill['label'],
-        date=bill['date'],
-        options=bill['options'],
-        type="consume" if bill['type'] == 0 else "income",
+        name=name,
+        type=type,
+        relativeId=relativeId,
     )
 
 
 async def main():
-    data = await getMongoBills()
+    data = await getMongoLabels()
     labels = data['data']
     consumeLabels = labels['consume']
     incomeLabels = labels['income']
 
-    # for i in consumeLabels:
+    print(consumeLabels)
 
+    for i in incomeLabels:
+        label = newLabel(i, type=2)
+        # print(label)
+        await postLabelsToMysql(label)
 
-#     bills = list(map(dealOneBill, bills))
-#     respData = await postBillsToMysql(bills)
-#     print(respData)
+    for i in consumeLabels:
+        subLabels = consumeLabels[i]
+        label = newLabel(i, type=0)
+        resp = await postLabelsToMysql(label)
+        id = resp['data']
+        print(id)
+        for j in subLabels:
+            sub_label = newLabel(j, type=1, relativeId=id)
+            await postLabelsToMysql(sub_label)
+
 
 asyncio.run(main())

@@ -24,17 +24,21 @@ class LabelServiceImpl : LabelService {
                 .map(::resultRowToLabel)
                 .groupBy { it.type }
         }
-        val consumeLabels = labelGroups[LabelType.CLASS]
+        val consumeLabels = labelGroups[LabelType.CONSUME_CLASS]
+            ?.sortedByDescending { it.count }
             ?.map {
                 it.vo().apply {
-                    this.labels = labelGroups[LabelType.LABEL]
+                    this.labels = labelGroups[LabelType.CONSUME_LABEL]
                         ?.filter { it2 -> it2.relativeId == it.id }
-                        ?.map(Label::vo)
-                        ?: emptyList()
+                        ?.sortedByDescending { it2 -> it2.count }
+                        ?.map { it2 -> it2.name }
                 }
-            } ?: emptyList()
+            }
+            ?: emptyList()
         val incomeLabels = labelGroups[LabelType.INCOME_CLASS]
-            ?.map(Label::vo) ?: emptyList()
+            ?.sortedByDescending { it.count }
+            ?.map(Label::vo)
+            ?: emptyList()
 
         return LabelGroup(income = incomeLabels, consume = consumeLabels)
     }
