@@ -3,6 +3,7 @@ package cn.fadinglight.services
 import cn.fadinglight.models.Bill
 
 interface BillService {
+    suspend fun getManyBills(year: String): List<Bill>
     suspend fun getManyBills(year: String, month: String): List<Bill>
     suspend fun getManyBills(year: String, month: String, day: String): List<Bill>
     suspend fun getManyBills(): List<Bill>

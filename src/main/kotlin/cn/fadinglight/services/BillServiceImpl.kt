@@ -5,20 +5,14 @@ import cn.fadinglight.mapers.Labels
 import cn.fadinglight.models.Bill
 import cn.fadinglight.models.BillType
 import cn.fadinglight.models.LabelType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
-import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
 class BillServiceImpl : BillService {
-    private val labelService = LabelServiceImpl()
     private fun formatSingletonNumber(n: String) = if (n.length == 1) {
         "0$n"
     } else {
@@ -34,6 +28,12 @@ class BillServiceImpl : BillService {
         label = row[Bills.label],
         options = row[Bills.options]
     )
+
+    override suspend fun getManyBills(year: String): List<Bill> = transaction {
+        Bills
+            .select(Bills.date like "${year}%")
+            .map(::resultRowToBill)
+    }
 
     override suspend fun getManyBills(year: String, month: String): List<Bill> = transaction {
         Bills

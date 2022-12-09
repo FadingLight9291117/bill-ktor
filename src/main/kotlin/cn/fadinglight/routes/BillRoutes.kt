@@ -14,20 +14,23 @@ import io.ktor.server.util.*
 fun Route.billRoute() {
     val billService = BillServiceImpl()
     route("/bill") {
-        get("/{year}/{month}") {
+        get("/{year}/{month?}/{day?}") {
             runCatching {
-                val year = call.parameters["year"]!!
-                val month = call.parameters["month"]!!
-                billService.getManyBills(year, month)
+                val year = call.parameters.getOrFail("year")
+                val month = call.parameters["month"]
+                val day = call.parameters["day"]
+                if (month is String && day is String) {
+                    billService.getManyBills(year, month, day)
+                } else if (month is String) {
+                    billService.getManyBills(year, month)
+                } else {
+                    billService.getManyBills(year)
+                }
             }.onSuccess {
                 call.respond(Resp.Ok(it).json())
             }.onFailure {
-                call.respond(Resp.Error(it.message, code = -1).json())
+                call.respond(Resp.Error(it.message).json())
             }
-        }
-
-        get("/") {
-            call.respond(status = HttpStatusCode.OK, Resp.Ok(billService.getManyBills()).json())
         }
 
         post("/") {
@@ -42,7 +45,7 @@ fun Route.billRoute() {
             }
         }
 
-        delete("{id?}") {
+        delete("{id}") {
             runCatching {
                 val id = call.parameters.getOrFail("id").toInt()
                 billService.deleteOneBill(id)

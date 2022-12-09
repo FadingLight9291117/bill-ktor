@@ -1,12 +1,12 @@
 services:
-  back:
-    container_name: bill-ktor
-    image: registry.cn-hangzhou.aliyuncs.com/fadinglight/bill-ktor:dev
-    restart: always
-    environment:
-      JDBC_URL: mariadb://db/bill
-    ports:
-      - 80:4000
+#  back:
+#    container_name: bill-ktor
+#    image: registry.cn-hangzhou.aliyuncs.com/fadinglight/bill-ktor:dev
+#    restart: always
+#    environment:
+#      JDBC_URL: mariadb://db/bill
+#    ports:
+#      - 80:4000
 
   db:
     container_name: bill-test-db
